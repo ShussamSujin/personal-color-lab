@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>나만의 색을 찾아라! 퍼스널 컬러 실험실</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
   <style>
@@ -24,13 +27,18 @@
     body {
       background-color: var(--cream);
       color: var(--ink);
-      font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', 'Inter', sans-serif;
+      font-family: 'Gowun Dodum', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
       background-image:
         radial-gradient(circle at 12% 18%, rgba(244, 200, 176, 0.45) 0%, transparent 28%),
         radial-gradient(circle at 88% 80%, rgba(125, 164, 205, 0.25) 0%, transparent 30%),
         linear-gradient(125deg, transparent 48%, rgba(255, 253, 247, 0.55) 48.5%, rgba(255, 253, 247, 0.55) 50%, transparent 50.5%);
       background-size: 100% 100%, 100% 100%, 160px 160px;
       min-height: 100vh;
+    }
+
+    h1, h2, h3, h4, .cute-title, .sketch-btn, .tab-pill {
+      font-family: 'Jua', 'Gowun Dodum', sans-serif;
+      letter-spacing: 0.01em;
     }
 
     .sketch-card {
@@ -951,7 +959,7 @@
       ctx.stroke();
 
       ctx.fillStyle = '#332824';
-      ctx.font = 'bold 16px sans-serif';
+      ctx.font = 'bold 17px Jua, Gowun Dodum, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('카메라를 켜거나 내 사진을 올려주세요!', 240, 56);
     }
@@ -1512,32 +1520,32 @@
       ctx.stroke();
 
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 17px sans-serif';
+      ctx.font = 'bold 18px Jua, Gowun Dodum, sans-serif';
       ctx.fillText(r.seasonName, 420, 86);
 
       ctx.fillStyle = '#332824';
-      ctx.font = 'bold 28px sans-serif';
+      ctx.font = 'bold 30px Jua, Gowun Dodum, sans-serif';
       ctx.fillText(`[${r.cls}] ${r.sid} ${r.sname}`, 386, 138);
 
-      ctx.font = 'bold 16px sans-serif';
+      ctx.font = 'bold 17px Jua, Gowun Dodum, sans-serif';
       ctx.fillStyle = '#D95526';
       ctx.fillText('관찰 근거', 386, 182);
       ctx.fillStyle = '#332824';
-      ctx.font = '16px sans-serif';
+      ctx.font = '16px "Gowun Dodum", sans-serif';
       wrapText(ctx, r.evidence, 386, 208, 450, 24);
 
-      ctx.font = 'bold 16px sans-serif';
+      ctx.font = 'bold 17px Jua, Gowun Dodum, sans-serif';
       ctx.fillStyle = '#4E7D28';
       ctx.fillText('추천 스타일링', 386, 282);
       ctx.fillStyle = '#332824';
-      ctx.font = '15px sans-serif';
+      ctx.font = '15px "Gowun Dodum", sans-serif';
       wrapText(ctx, `• 재질: ${r.style.material}`, 386, 308, 450, 22);
       wrapText(ctx, `• 무늬: ${r.style.pattern}`, 386, 334, 450, 22);
       wrapText(ctx, `• 액세서리: ${r.style.accessory}`, 386, 360, 450, 22);
 
       // 하단 베스트 컬러 TOP 3 칩
       ctx.fillStyle = '#332824';
-      ctx.font = 'bold 16px sans-serif';
+      ctx.font = 'bold 17px Jua, Gowun Dodum, sans-serif';
       ctx.fillText('나의 베스트 컬러 TOP 3', 54, 438);
       r.top3.forEach((sw, i) => {
         const bx = 54 + i * 265;
@@ -1547,7 +1555,7 @@
         ctx.fill();
         ctx.stroke();
         ctx.fillStyle = '#332824';
-        ctx.font = 'bold 16px sans-serif';
+        ctx.font = 'bold 17px Jua, Gowun Dodum, sans-serif';
         ctx.fillText(`${i + 1}. ${sw.name}`, bx + 64, 483);
       });
 
