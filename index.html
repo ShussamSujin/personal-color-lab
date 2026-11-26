@@ -1,0 +1,1618 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>나만의 색을 찾아라! 퍼스널 컬러 실험실</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      --cream: #FAF0D7;
+      --cream-soft: #FFFDF7;
+      --peach: #F4C8B0;
+      --peach-light: #FCE8DC;
+      --moss: #4E7D28;
+      --moss-light: #E4EED8;
+      --sky: #7DA4CD;
+      --sky-light: #E2EEF9;
+      --brick: #D95526;
+      --ink: #332824;
+      --road: #F5E6CC;
+    }
+
+    body {
+      background-color: var(--cream);
+      color: var(--ink);
+      font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', 'Inter', sans-serif;
+      background-image:
+        radial-gradient(circle at 12% 18%, rgba(244, 200, 176, 0.45) 0%, transparent 28%),
+        radial-gradient(circle at 88% 80%, rgba(125, 164, 205, 0.25) 0%, transparent 30%),
+        linear-gradient(125deg, transparent 48%, rgba(255, 253, 247, 0.55) 48.5%, rgba(255, 253, 247, 0.55) 50%, transparent 50.5%);
+      background-size: 100% 100%, 100% 100%, 160px 160px;
+      min-height: 100vh;
+    }
+
+    .sketch-card {
+      background-color: var(--cream-soft);
+      border: 2px solid var(--ink);
+      border-radius: 26px;
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+
+    .sketch-peach {
+      background-color: var(--peach-light);
+      border: 2px solid var(--ink);
+      border-radius: 28px;
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+
+    .sketch-btn {
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      box-shadow: 2px 2px 0 var(--ink);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.15s ease;
+    }
+
+    .sketch-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 3px 3px 0 var(--ink);
+    }
+
+    .sketch-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 0 0 0 var(--ink);
+    }
+
+    .tab-pill {
+      border: 2px solid var(--ink);
+      border-radius: 999px;
+      background-color: var(--cream-soft);
+      color: var(--ink);
+      transition: all 0.15s ease;
+    }
+
+    .tab-pill.active {
+      background-color: var(--brick);
+      color: #FFFDF7;
+      box-shadow: 2px 2px 0 var(--ink);
+    }
+
+    .drape-stage {
+      position: relative;
+      overflow: hidden;
+      border-radius: 24px;
+      border: 2px solid var(--ink);
+      background: #FFFDF7;
+    }
+
+    .drape-collar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 30%;
+      border-top: 2px solid var(--ink);
+      transition: background-color 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cape-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 8%;
+      right: 8%;
+      height: 33%;
+      background: #FFFFFF;
+      border-top: 2px dashed #CBD5E1;
+      border-radius: 50% 50% 0 0 / 28% 28% 0 0;
+      pointer-events: none;
+    }
+
+    .toast-box {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--ink);
+      color: var(--cream-soft);
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 14px;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.25s ease;
+      z-index: 60;
+      box-shadow: 0 8px 20px rgba(51, 40, 36, 0.25);
+    }
+
+    .toast-box.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .swatch-dot {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 2px solid var(--ink);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .swatch-dot:hover {
+      transform: scale(1.1);
+    }
+
+    .swatch-dot.selected {
+      outline: 3px solid var(--brick);
+      outline-offset: 2px;
+      transform: scale(1.12);
+    }
+  </style>
+</head>
+<body class="antialiased pb-16">
+  <!-- 상단 헤더: 일러스트 지도 무드 -->
+  <header class="max-w-6xl mx-auto px-4 pt-5 pb-3">
+    <div class="sketch-peach px-5 py-4 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-12 h-12 rounded-2xl bg-[#FFFDF7] border-2 border-[#332824] flex items-center justify-center shrink-0">
+          <!-- 손그림 팔레트 & 나뭇잎 일러스트 -->
+          <svg viewBox="0 0 48 48" class="w-8 h-8" fill="none">
+            <path d="M24 6C13.5 6 6 13.8 6 23.5C6 32.8 13 38 19.5 38C22 38 23.2 36.2 22.8 34.2C22.4 32.3 24.2 30.8 26.2 31.3C28.5 31.8 31 32 33.5 31C39.2 28.8 42 23.8 42 18.5C42 11.2 34 6 24 6Z" fill="#FAF0D7" stroke="#332824" stroke-width="2.5"/>
+            <circle cx="15" cy="19" r="3" fill="#D95526" stroke="#332824" stroke-width="1.5"/>
+            <circle cx="22" cy="13" r="3" fill="#4E7D28" stroke="#332824" stroke-width="1.5"/>
+            <circle cx="31" cy="15" r="3" fill="#7DA4CD" stroke="#332824" stroke-width="1.5"/>
+            <circle cx="33" cy="23" r="3" fill="#F4C8B0" stroke="#332824" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#4E7D28] text-white border border-[#332824]">2학년 가정 · Ⅱ-02 자기 이미지와 표현</span>
+            <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-[#7DA4CD] text-white border border-[#332824]">1~2차시 실험실</span>
+          </div>
+          <h1 class="text-lg sm:text-xl font-extrabold tracking-tight mt-1 whitespace-nowrap">나만의 색을 찾아라! 퍼스널 컬러 실험실</h1>
+        </div>
+      </div>
+
+      <!-- 1줄 내비게이션 -->
+      <nav class="flex flex-wrap items-center gap-1.5 shrink-0" aria-label="실험실 메뉴">
+        <button type="button" data-tab="secret" class="tab-pill active px-3 py-1.5 text-xs sm:text-sm font-bold flex items-center gap-1 whitespace-nowrap">
+          <i data-lucide="sparkles" class="w-4 h-4"></i> ① 색의 비밀
+        </button>
+        <button type="button" data-tab="lab" class="tab-pill px-3 py-1.5 text-xs sm:text-sm font-bold flex items-center gap-1 whitespace-nowrap">
+          <i data-lucide="camera" class="w-4 h-4"></i> ② 사진 진단실
+        </button>
+        <button type="button" data-tab="stylebook" class="tab-pill px-3 py-1.5 text-xs sm:text-sm font-bold flex items-center gap-1 whitespace-nowrap">
+          <i data-lucide="palette" class="w-4 h-4"></i> ③ 계절 스타일북
+        </button>
+        <button type="button" data-tab="padlet" class="tab-pill px-3 py-1.5 text-xs sm:text-sm font-bold flex items-center gap-1 whitespace-nowrap">
+          <i data-lucide="layout-grid" class="w-4 h-4"></i> ④ 패들렛 공유
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 mt-4 space-y-6">
+    <!-- ==================== TAB 1: 색의 비밀 & 퀴즈 (1차시) ==================== -->
+    <section id="tab-secret" class="tab-panel space-y-6">
+      <!-- 2차시 로드맵 & 실험실 약속 -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div class="sketch-card p-5 lg:col-span-2">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-extrabold flex items-center gap-2">
+              <span class="w-7 h-7 rounded-full bg-[#F4C8B0] border-2 border-[#332824] inline-flex items-center justify-center text-sm">1</span>
+              2차시 동안 이렇게 실험해요
+            </h2>
+            <span class="text-xs font-bold text-[#D95526]">소문 말고 실험 근거로!</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="p-4 rounded-2xl bg-[#FAF0D7] border-2 border-[#332824]">
+              <div class="text-xs font-extrabold text-[#4E7D28] mb-1">1차시 · 교과서 52쪽</div>
+              <div class="font-extrabold text-base mb-2">색의 비밀 &amp; 웜·쿨 찾기</div>
+              <ul class="text-sm space-y-1 text-[#332824]/90">
+                <li>• 퀴즈로 색의 대비 실험 (7분)</li>
+                <li>• 교과서 개념 &amp; 예측 퀴즈 (11분)</li>
+                <li>• 1단계 웜쿨 체크 + 2단계 5색 진단 (20분)</li>
+              </ul>
+            </div>
+            <div class="p-4 rounded-2xl bg-[#E2EEF9] border-2 border-[#332824]">
+              <div class="text-xs font-extrabold text-[#332824] mb-1">2차시 · 교과서 52~53쪽</div>
+              <div class="font-extrabold text-base mb-2">나의 계절 &amp; 베스트 TOP 3</div>
+              <ul class="text-sm space-y-1 text-[#332824]/90">
+                <li>• 3단계 계절 진단: 봄·여름·가을·겨울 (15분)</li>
+                <li>• 계절별 재질·무늬·액세서리 탐색 (7분)</li>
+                <li>• 베스트 컬러 TOP 3 &amp; 패들렛 공유 (10분)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="sketch-card p-5 bg-[#E4EED8]">
+          <h2 class="text-lg font-extrabold flex items-center gap-2 mb-3">
+            <i data-lucide="heart-handshake" class="w-5 h-5 text-[#4E7D28]"></i>
+            실험실 약속 3가지
+          </h2>
+          <ol class="space-y-2.5 text-sm font-medium">
+            <li class="bg-[#FFFDF7] p-2.5 rounded-xl border border-[#332824]">
+              <strong>1.</strong> 평가는 얼굴 말고 <strong>색</strong>에게 해요!
+            </li>
+            <li class="bg-[#FFFDF7] p-2.5 rounded-xl border border-[#332824]">
+              <strong>2.</strong> "이 색일 때 얼굴이 환해 보여요"처럼 말해요.
+            </li>
+            <li class="bg-[#FFFDF7] p-2.5 rounded-xl border border-[#332824]">
+              <strong>3.</strong> 시트는 접지 않고 쓴 색은 제자리에 둬요.
+            </li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- 인터랙티브 색의 대비 착시 실험 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <div class="sketch-card p-5">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-lg font-extrabold">퀴즈! 가운데 동그라미, 같은 색일까요?</h3>
+            <button type="button" id="toggleIllusionBtn" class="sketch-btn px-3 py-1.5 text-xs font-bold bg-[#F4C8B0]">
+              정답 확인 (배경 가리기)
+            </button>
+          </div>
+          <p class="text-sm text-[#332824]/80 mb-4">주변 색(색의 대비)에 따라 똑같은 색도 노랗거나 푸르게 달라 보입니다.</p>
+          <div class="grid grid-cols-2 gap-4 items-center">
+            <div id="illusionBoxL" class="h-44 rounded-2xl border-2 border-[#332824] flex flex-col items-center justify-center transition-colors duration-300" style="background-color: #2B59C3;">
+              <div class="w-16 h-16 rounded-full border-2 border-[#332824]" style="background-color: #E8C5B0;"></div>
+              <span class="mt-2 text-xs font-bold px-2 py-0.5 rounded bg-white/85">시원한 파랑 배경</span>
+            </div>
+            <div id="illusionBoxR" class="h-44 rounded-2xl border-2 border-[#332824] flex flex-col items-center justify-center transition-colors duration-300" style="background-color: #F4C430;">
+              <div class="w-16 h-16 rounded-full border-2 border-[#332824]" style="background-color: #E8C5B0;"></div>
+              <span class="mt-2 text-xs font-bold px-2 py-0.5 rounded bg-white/85">따뜻한 노랑 배경</span>
+            </div>
+          </div>
+          <div id="illusionAnswer" class="hidden mt-3 p-3 rounded-xl bg-[#FAF0D7] border border-[#332824] text-sm font-bold text-[#D95526]">
+            정답: 두 동그라미는 완전히 같은 색(#E8C5B0)이에요! 턱 밑 색이 눈의 대비와 빛 반사로 얼굴을 달라 보이게 만들어요.
+          </div>
+        </div>
+
+        <!-- 옷 색 대비 실험 -->
+        <div class="sketch-card p-5">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+            <h3 class="text-lg font-extrabold">같은 사람, 턱 밑 색만 바꾸면?</h3>
+            <div class="flex gap-2">
+              <button type="button" data-demo-tone="cool" class="sketch-btn px-3 py-1 text-xs font-bold bg-[#7DA4CD] text-white">파랑(쿨) 입히기</button>
+              <button type="button" data-demo-tone="warm" class="sketch-btn px-3 py-1 text-xs font-bold bg-[#F4C430]">노랑(웜) 입히기</button>
+            </div>
+          </div>
+          <p class="text-sm text-[#332824]/80 mb-3">피부색은 그대로인데 옷·시트 색만 바뀌어도 얼굴 밝기와 윤곽 인상이 달라집니다.</p>
+          <div class="flex flex-col sm:flex-row items-center gap-4 bg-[#FAF0D7] p-4 rounded-2xl border-2 border-[#332824]">
+            <svg viewBox="0 0 180 170" class="w-40 h-36 shrink-0 rounded-xl bg-[#FFFDF7] border border-[#332824]">
+              <path id="demoShirt" d="M20 170 C25 125 55 112 90 112 C125 112 155 125 160 170 Z" fill="#4A7BB7" stroke="#332824" stroke-width="2.5"/>
+              <rect x="76" y="90" width="28" height="28" rx="10" fill="#F2C9B2" stroke="#332824" stroke-width="2"/>
+              <ellipse cx="90" cy="64" rx="34" ry="40" fill="#F2C9B2" stroke="#332824" stroke-width="2.5"/>
+              <path d="M54 58 C54 25 126 25 126 58 C122 40 105 34 90 34 C75 34 58 40 54 58Z" fill="#3B2F2B"/>
+              <circle cx="77" cy="62" r="3" fill="#332824"/>
+              <circle cx="103" cy="62" r="3" fill="#332824"/>
+              <path d="M82 78 Q90 84 98 78" stroke="#B85C4E" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            </svg>
+            <div class="text-sm space-y-2">
+              <div id="demoCaption" class="font-bold text-[#332824]">현재 선택: 시원한 파랑(쿨) 시트</div>
+              <p class="text-xs leading-relaxed text-[#332824]/85">
+                • <strong>피부가 밝으면 무조건 쿨톤?</strong> 아니에요! 밝기(명도)가 아니라 <strong>노란 기(웜)</strong>와 <strong>푸른 기(쿨)</strong>의 조화로 나뉘어요.<br/>
+                • 밝은 웜톤도, 어두운 쿨톤도 모두 있어요.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 재미로 예측 퀴즈 (슬라이드 20~21) -->
+      <div class="sketch-card p-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+          <div>
+            <h3 class="text-lg font-extrabold">재미로 예측 퀴즈! 나는 A·B·C·D 중 뭘까?</h3>
+            <p class="text-sm text-[#332824]/80">4가지 질문에 답하고 내 예측 결과를 확인해 보세요. (진짜 근거는 2번 사진 진단실에서 찾아요!)</p>
+          </div>
+          <button type="button" id="resetQuizBtn" class="sketch-btn px-3 py-1.5 text-xs font-bold bg-[#FFFDF7]">다시 선택</button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="quizContainer">
+          <!-- JS로 4문항 렌더링 -->
+        </div>
+
+        <div id="quizResultBox" class="mt-4 p-4 rounded-2xl bg-[#F7D2BD] border-2 border-[#332824] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div id="quizResultText" class="text-sm font-bold">4개 문항을 모두 선택하면 예측 결과가 여기에 나타납니다.</div>
+          <button type="button" id="goLabFromQuizBtn" class="sketch-btn px-4 py-2 text-sm font-extrabold bg-[#4E7D28] text-white shrink-0">
+            사진 진단실로 검증하러 가기 →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 2: 사진 촬영 & 드레이프 진단실 ==================== -->
+    <section id="tab-lab" class="tab-panel hidden space-y-6">
+      <!-- 학생 정보 입력 바 -->
+      <div class="sketch-peach p-4 sm:p-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <h2 class="text-lg font-extrabold flex items-center gap-2">
+            <i data-lucide="user-check" class="w-5 h-5 text-[#D95526]"></i>
+            내 정보 입력 (패들렛 자동 노출용)
+          </h2>
+          <span class="text-xs font-bold bg-[#FFFDF7] px-3 py-1 rounded-full border border-[#332824]">화장 없이 맨얼굴 · 밝은 창가 권장</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          <div>
+            <label for="studentClass" class="block text-xs font-bold mb-1">반 선택 (패들렛 섹션)</label>
+            <select id="studentClass" class="w-full px-3 py-2 rounded-xl border-2 border-[#332824] bg-[#FFFDF7] font-bold text-sm">
+              <option value="1반">1반</option><option value="2반">2반</option><option value="3반">3반</option>
+              <option value="4반">4반</option><option value="5반">5반</option><option value="6반">6반</option>
+              <option value="7반">7반</option><option value="8반">8반</option><option value="9반">9반</option>
+              <option value="10반">10반</option>
+            </select>
+          </div>
+          <div>
+            <label for="studentId" class="block text-xs font-bold mb-1">학번</label>
+            <input id="studentId" type="text" placeholder="예: 20315" class="w-full px-3 py-2 rounded-xl border-2 border-[#332824] bg-[#FFFDF7] font-bold text-sm" />
+          </div>
+          <div>
+            <label for="studentName" class="block text-xs font-bold mb-1">이름</label>
+            <input id="studentName" type="text" placeholder="예: 김하늘" class="w-full px-3 py-2 rounded-xl border-2 border-[#332824] bg-[#FFFDF7] font-bold text-sm" />
+          </div>
+          <div class="flex items-end">
+            <button type="button" id="analyzeToneBtn" class="sketch-btn w-full py-2 px-3 bg-[#7DA4CD] text-white font-extrabold text-sm flex items-center justify-center gap-1.5">
+              <i data-lucide="scan-face" class="w-4 h-4"></i> 사진 색감 자동 분석
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 왼쪽: 사진/카메라 + 가상 케이프 & 드레이프 / 오른쪽: 5색 웜쿨 실험 & 계절 진단 -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <!-- 카메라 & 가상 드레이프 스테이지 -->
+        <div class="sketch-card p-5 lg:col-span-5 space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <h3 class="text-base font-extrabold">거울 / 사진 드레이핑 스테이지</h3>
+            <label class="inline-flex items-center gap-1.5 text-xs font-bold cursor-pointer">
+              <input id="capeToggle" type="checkbox" checked class="w-4 h-4 accent-[#4E7D28]" />
+              흰 케이프 입기
+            </label>
+          </div>
+
+          <div class="drape-stage aspect-[4/4.3] bg-[#FAF0D7] flex items-center justify-center">
+            <video id="cameraVideo" autoplay playsinline muted class="hidden w-full h-full object-cover"></video>
+            <canvas id="photoCanvas" class="w-full h-full object-cover"></canvas>
+            <div id="capeLayer" class="cape-overlay"></div>
+            <div id="drapeCollar" class="drape-collar" style="background-color: #F88379;">
+              <span id="drapeLabel" class="px-3 py-1 rounded-full bg-white/90 border border-[#332824] text-xs font-extrabold">
+                핑크 · 웜 시트 (코랄 피치)
+              </span>
+            </div>
+          </div>
+
+          <!-- 카메라 / 업로드 컨트롤 -->
+          <input id="capturePhotoInput" type="file" accept="image/*" capture="user" class="hidden" />
+          <input id="uploadPhotoInput" type="file" accept="image/*" class="hidden" />
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" id="capturePhotoBtn" class="sketch-btn py-2 px-2 text-xs font-bold bg-[#D95526] text-white flex items-center justify-center gap-1">
+              <i data-lucide="camera" class="w-3.5 h-3.5"></i> 기기 카메라로 찍기
+            </button>
+            <button type="button" id="uploadPhotoBtn" class="sketch-btn py-2 px-2 text-xs font-bold bg-[#E4EED8] flex items-center justify-center gap-1">
+              <i data-lucide="upload" class="w-3.5 h-3.5"></i> 사진 올리기
+            </button>
+            <button type="button" id="startCamBtn" class="sketch-btn py-2 px-2 text-xs font-bold bg-[#FFFDF7] flex items-center justify-center gap-1">
+              <i data-lucide="video" class="w-3.5 h-3.5"></i> 카메라 켜기
+            </button>
+            <button type="button" id="snapCamBtn" class="sketch-btn py-2 px-2 text-xs font-bold bg-[#F4C8B0] flex items-center justify-center gap-1 disabled:opacity-50" disabled>
+              <i data-lucide="aperture" class="w-3.5 h-3.5"></i> 사진 찍기
+            </button>
+          </div>
+          <p class="text-[11px] text-[#332824]/75 leading-snug">
+            구글 사이트 도구 등 임베드 환경에서는 브라우저 보안 정책으로 실시간 웹캠이 제한될 수 있어요. 이럴 땐 <strong>기기 카메라로 찍기</strong> 또는 <strong>사진 올리기</strong>를 이용해 주세요!
+          </p>
+
+          <div id="autoToneBox" class="hidden p-3 rounded-2xl bg-[#E2EEF9] border-2 border-[#332824] text-xs leading-relaxed">
+            <!-- 자동 색감 분석 결과 -->
+          </div>
+        </div>
+
+        <!-- 2단계 5색 진단 + 3단계 계절 + 근거 + TOP 3 -->
+        <div class="sketch-card p-5 lg:col-span-7 space-y-5">
+          <!-- 2단계: 5색 웜·쿨 비교 -->
+          <div>
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <h3 class="text-base font-extrabold">2단계: 5가지 색 웜·쿨 시트 비교 (3초씩!)</h3>
+              <button type="button" id="timerBtn" class="sketch-btn px-3 py-1 text-xs font-bold bg-[#F4C8B0] flex items-center gap-1">
+                <i data-lucide="timer" class="w-3.5 h-3.5"></i> <span id="timerText">3초 타이머 시작</span>
+              </button>
+            </div>
+
+            <!-- 5색 탭 -->
+            <div class="flex flex-wrap gap-1.5 mb-3" id="fiveColorTabs"></div>
+
+            <!-- 현재 색 관찰 포인트 & 웜/쿨 전환 -->
+            <div class="p-4 rounded-2xl bg-[#FAF0D7] border-2 border-[#332824] space-y-3" id="colorDetailBox"></div>
+          </div>
+
+          <!-- 3단계: 계절 선택 & 근거 표현 은행 -->
+          <div class="pt-3 border-t-2 border-dashed border-[#332824]/25 space-y-3">
+            <h3 class="text-base font-extrabold">3단계: 나의 계절 선택 &amp; 관찰 근거 기록</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="seasonSelectBtns"></div>
+
+            <div>
+              <div class="text-xs font-bold mb-1.5">근거 표현 은행 (클릭하면 아래 문장에 들어가요)</div>
+              <div class="flex flex-wrap gap-1.5" id="evidenceChips"></div>
+            </div>
+
+            <textarea id="evidenceInput" rows="2" placeholder="예: 핑크와 블루에서 여름 쿨 시트일 때 얼굴이 더 환해 보이고 윤곽이 또렷해 보였어요." class="w-full p-3 rounded-2xl border-2 border-[#332824] bg-[#FFFDF7] text-sm"></textarea>
+
+            <!-- 베스트 컬러 TOP 3 -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-bold">보너스: 나의 베스트 컬러 TOP 3 고르기 (<span id="top3Count">0</span>/3)</span>
+                <span id="top3Names" class="text-xs font-bold text-[#D95526]"></span>
+              </div>
+              <div class="flex flex-wrap gap-2" id="top3Palette"></div>
+            </div>
+          </div>
+
+          <!-- 진단 완료 버튼 -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-2">
+            <div id="warmCoolSummary" class="text-xs font-bold text-[#4E7D28]">5색 관찰 기록: 아직 선택 전</div>
+            <button type="button" id="completeDiagBtn" class="sketch-btn px-5 py-2.5 bg-[#D95526] text-white font-extrabold text-sm flex items-center gap-2">
+              <i data-lucide="sparkles" class="w-4 h-4"></i> 스타일 추천 받고 패들렛에 올리기
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: 4계절 스타일북 (2차시) ==================== -->
+    <section id="tab-stylebook" class="tab-panel hidden space-y-5">
+      <div class="sketch-card p-5">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <div>
+            <h2 class="text-lg font-extrabold">2차시 계절별 스타일 가이드 (재질 · 무늬 · 액세서리)</h2>
+            <p class="text-sm text-[#332824]/80">슬라이드 속 계절별 스타일링과 다른 분위기 연출 팁을 한눈에 살펴보세요.</p>
+          </div>
+          <div class="flex flex-wrap gap-2" id="stylebookTabs"></div>
+        </div>
+        <div id="stylebookContent" class="grid grid-cols-1 lg:grid-cols-3 gap-5"></div>
+      </div>
+
+      <!-- 집에서도 해봐요: 간이 진단 & 기억할 점 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="sketch-peach p-5">
+          <h3 class="text-base font-extrabold mb-2">집에서도 해봐요: 간이 진단 방법</h3>
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div class="p-3 rounded-xl bg-[#FFFDF7] border border-[#332824]">
+              <div class="font-extrabold text-[#D95526] mb-1">웜톤 특징</div>
+              금 액세서리, 상아색(아이보리) 옷이 잘 어울려요.
+            </div>
+            <div class="p-3 rounded-xl bg-[#FFFDF7] border border-[#332824]">
+              <div class="font-extrabold text-[#4A7BB7] mb-1">쿨톤 특징</div>
+              은 액세서리, 순백색(화이트) 옷이 잘 어울려요.
+            </div>
+          </div>
+        </div>
+        <div class="sketch-card p-5 bg-[#E4EED8]">
+          <h3 class="text-base font-extrabold mb-2">기억해요! 색은 나를 돕는 도구</h3>
+          <p class="text-sm leading-relaxed">
+            <strong>어울리는 색</strong>은 얼굴 가까이에 쓰면 내가 더 돋보여요. <strong>좋아하는 색</strong>은 하의·가방·신발로 얼마든지 입어요! 모든 계절에는 그 계절만의 예쁜 색이 있습니다.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: 패들렛 공유 보드 ==================== -->
+    <section id="tab-padlet" class="tab-panel hidden space-y-6">
+      <!-- 내 진단 결과 카드 & 원클릭 복사/이미지 저장 -->
+      <div id="myResultBanner" class="sketch-peach p-5 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-[#4E7D28] text-white border border-[#332824]">패들렛 업로드 준비 완료</span>
+            <h2 class="text-lg font-extrabold mt-1" id="shareTitlePreview">아직 진단 결과가 없어요 — ② 사진 진단실에서 진단을 완료해 주세요!</h2>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" id="copyPostBtn" class="sketch-btn px-4 py-2 text-xs font-extrabold bg-[#FFFDF7] flex items-center gap-1.5">
+              <i data-lucide="copy" class="w-4 h-4"></i> 학번·이름·추천글 복사
+            </button>
+            <button type="button" id="downloadCardBtn" class="sketch-btn px-4 py-2 text-xs font-extrabold bg-[#D95526] text-white flex items-center gap-1.5">
+              <i data-lucide="download" class="w-4 h-4"></i> 결과 카드 이미지 저장
+            </button>
+          </div>
+        </div>
+
+        <div id="shareBodyPreview" class="p-3.5 rounded-2xl bg-[#FFFDF7] border-2 border-[#332824] text-sm whitespace-pre-line">
+          진단을 완료하면 학번, 이름, 반, 진단 계절, 관찰 근거, 베스트 컬러 TOP 3, 추천 스타일(재질·무늬·액세서리)이 여기에 자동으로 정리됩니다.
+        </div>
+
+        <div class="text-xs font-bold text-[#332824]/85 flex flex-wrap items-center gap-2">
+          <span>올리는 방법:</span>
+          <span class="px-2 py-0.5 rounded bg-[#FFFDF7] border border-[#332824]">1. 위 버튼으로 글 복사 &amp; 카드 이미지 저장</span>
+          <span class="px-2 py-0.5 rounded bg-[#FFFDF7] border border-[#332824]">2. 아래 패들렛에서 내 반(1~10반)의 + 버튼 클릭</span>
+          <span class="px-2 py-0.5 rounded bg-[#FFFDF7] border border-[#332824]">3. 붙여넣기 &amp; 카드 이미지 첨부 후 게시!</span>
+        </div>
+      </div>
+
+      <!-- 실제 패들렛 임베드 (사용자 제공 코드 적용) -->
+      <div class="sketch-card p-4 sm:p-5 space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-base font-extrabold flex items-center gap-2">
+            <i data-lucide="pin" class="w-4 h-4 text-[#D95526]"></i>
+            우리 학교 퍼스널 컬러 패들렛 보드 (1반~10반)
+          </h3>
+          <a href="https://padlet.com/gajungssamzzang/padlet-s025t8dtu6qvzv5yvzaq" target="_blank" rel="noopener noreferrer" class="sketch-btn px-3 py-1 text-xs font-bold bg-[#E2EEF9]">
+            새 창에서 크게 열기 ↗
+          </a>
+        </div>
+        <div class="padlet-embed" style="border:2px solid #332824;border-radius:16px;box-sizing:border-box;overflow:hidden;position:relative;width:100%;background:#F4F4F4">
+          <p style="padding:0;margin:0">
+            <iframe src="https://padlet.com/embed/s025t8dtu6qvzv5yvzaq" frameborder="0" allow="camera;microphone;geolocation;display-capture;clipboard-write" style="width:100%;height:608px;display:block;padding:0;margin:0" title="나의 퍼스널 컬러 진단 패들렛"></iframe>
+          </p>
+        </div>
+      </div>
+
+      <!-- 사이트 내 실시간 학급 갤러리 -->
+      <div class="sketch-card p-5 space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <h3 class="text-base font-extrabold">실험실 실시간 기록 보드 (이 기기 저장)</h3>
+          <select id="galleryFilter" class="px-3 py-1.5 rounded-xl border-2 border-[#332824] bg-[#FFFDF7] text-xs font-bold">
+            <option value="전체">전체 반 보기</option>
+            <option value="1반">1반</option><option value="2반">2반</option><option value="3반">3반</option>
+            <option value="4반">4반</option><option value="5반">5반</option><option value="6반">6반</option>
+            <option value="7반">7반</option><option value="8반">8반</option><option value="9반">9반</option>
+            <option value="10반">10반</option>
+          </select>
+        </div>
+        <div id="localGalleryGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast-box" role="status" aria-live="polite"></div>
+
+  <script>
+    // ==================== 데이터 정의 (구글 슬라이드 68장 기반) ====================
+    const QUIZ_QUESTIONS = [
+      {
+        id: 'q1',
+        title: 'Q1. 피부 톤 느낌',
+        options: [
+          { code: 'A', label: '노란빛이 도는 밝은 피부' },
+          { code: 'B', label: '붉은빛·핑크빛이 돌아요' },
+          { code: 'C', label: '노란빛이 도는 차분한 피부' },
+          { code: 'D', label: '푸른빛·붉은빛이 선명해요' }
+        ]
+      },
+      {
+        id: 'q2',
+        title: 'Q2. 머리카락·눈동자',
+        options: [
+          { code: 'A', label: '밝은 갈색' },
+          { code: 'B', label: '부드러운 검정 / 회갈색' },
+          { code: 'C', label: '짙은 갈색' },
+          { code: 'D', label: '새까만 검정' }
+        ]
+      },
+      {
+        id: 'q3',
+        title: 'Q3. 자주 듣는 이미지',
+        options: [
+          { code: 'A', label: '발랄하고 생기 있어요' },
+          { code: 'B', label: '부드럽고 산뜻해요' },
+          { code: 'C', label: '차분하고 성숙해요' },
+          { code: 'D', label: '도시적이고 또렷해요' }
+        ]
+      },
+      {
+        id: 'q4',
+        title: 'Q4. 손목 혈관 색',
+        options: [
+          { code: 'A', label: '초록빛이 더 많아요 (봄)' },
+          { code: 'B', label: '푸른빛·보랏빛이에요 (여름)' },
+          { code: 'C', label: '초록빛이 진해요 (가을)' },
+          { code: 'D', label: '선명한 푸른빛이에요 (겨울)' }
+        ]
+      }
+    ];
+
+    const FIVE_COLORS = [
+      {
+        id: 'pink',
+        name: '핑크',
+        point: '피부의 건강함, 시트와의 조화',
+        warmHex: '#F88379',
+        warmName: '웜 핑크 (코랄 피치)',
+        coolHex: '#F4A6D7',
+        coolName: '쿨 핑크 (라벤더 로즈)',
+        warmDesc: '얼굴 인상이 편안하고 따뜻해 보여요.',
+        coolDesc: '얼굴이 환해지고 윤기 있어 보여요.',
+        badDesc: '노란 기가 강해 보이거나 어두워 보여요.'
+      },
+      {
+        id: 'red',
+        name: '레드',
+        point: '혈색과의 조화',
+        warmHex: '#E04F33',
+        warmName: '웜 레드 (토마토 레드)',
+        coolHex: '#C71555',
+        coolName: '쿨 레드 (체리 버건디)',
+        warmDesc: '이목구비가 선명해 보여요.',
+        coolDesc: '피부색이 화사해 보여요.',
+        badDesc: '입술색이 어두워지거나 붉은 기가 비쳐 보여요.'
+      },
+      {
+        id: 'yellow',
+        name: '옐로',
+        point: '피부의 투명감과 화사함',
+        warmHex: '#F4B41A',
+        warmName: '웜 옐로 (개나리 머스타드)',
+        coolHex: '#F7EA6F',
+        coolName: '쿨 옐로 (레몬 파스텔)',
+        warmDesc: '안정감 있고 생기 있어 보여요.',
+        coolDesc: '피부 톤이 맑고 환해져요.',
+        badDesc: '창백해 보이거나 붉고 어두워 보여요.'
+      },
+      {
+        id: 'green',
+        name: '그린',
+        point: '얼굴 윤곽, 눈동자의 또렷함',
+        warmHex: '#7A9A2B',
+        warmName: '웜 그린 (올리브 연두)',
+        coolHex: '#1F9D8B',
+        coolName: '쿨 그린 (에메랄드 민트)',
+        warmDesc: '얼굴 윤곽이 부드러워 보여요.',
+        coolDesc: '이목구비가 또렷해 보여요.',
+        badDesc: '턱 주변에 초록빛이 돌거나 노란 기·붉은 기가 보여요.'
+      },
+      {
+        id: 'blue',
+        name: '블루',
+        point: '얼굴 윤곽과의 조화, 피부의 투명함',
+        warmHex: '#3B8EA5',
+        warmName: '웜 블루 (터콰이즈 청록)',
+        coolHex: '#2B59C3',
+        coolName: '쿨 블루 (로얄 블루)',
+        warmDesc: '안정감 있고 분위기 있어 보여요.',
+        coolDesc: '화사하고 선명해 보여요.',
+        badDesc: '윤곽이 흐려 보이거나 밋밋해 보여요.'
+      }
+    ];
+
+    const SEASONS = {
+      spring: {
+        id: 'spring',
+        name: '봄 웜톤',
+        short: '밝고 따뜻한 색',
+        badgeColor: '#F4A261',
+        toneGroup: '웜톤',
+        colorsDesc: '노란색이 가미된 색, 따뜻한 분홍·연두 등 밝고 생기 있는 색',
+        material: '촘촘한 코튼, 가벼운 오간자, 쉬폰, 저지',
+        pattern: '프릴·러플, 꽃무늬, 물방울, 리본, 깅엄 체크',
+        accessory: '빛나는 골드, 상아, 산호, 작고 달랑거리는 것',
+        tip1Title: '부드럽고 투명하게 하고 싶을 때',
+        tip1Desc: '흰 기가 살짝 섞인 파스텔 피치나 아이보리 니트 활용',
+        tip2Title: '도시적이고 존재감 있게 하고 싶을 때',
+        tip2Desc: '선명한 코랄 레드나 비비드 오렌지로 포인트 주기',
+        swatches: [
+          { name: '피치 코랄', hex: '#FF8C69' },
+          { name: '버터 옐로', hex: '#FFD166' },
+          { name: '애플 민트', hex: '#88D498' },
+          { name: '웜 아이보리', hex: '#FFF3D6' },
+          { name: '살몬 핑크', hex: '#FA8072' },
+          { name: '라이트 카멜', hex: '#D4A373' }
+        ]
+      },
+      summer: {
+        id: 'summer',
+        name: '여름 쿨톤',
+        short: '부드럽고 시원한 색',
+        badgeColor: '#7DA4CD',
+        toneGroup: '쿨톤',
+        colorsDesc: '분홍색 계열, 흰색과 파란색이 들어 있는 부드럽고 차가운 색',
+        material: '부드러운 실크, 쉬폰, 시스루, 레이스',
+        pattern: '마린 스트라이프, 수채화 같은 프린트, 작은 물방울',
+        accessory: '실버, 펄(진주), 유리, 섬세한 느낌의 것',
+        tip1Title: '고급스럽고 깊이 있게 하고 싶을 때',
+        tip1Desc: '차분한 모브 퍼플이나 코코아 그레이 컬러 매치',
+        tip2Title: '밝고 생기 있게 하고 싶을 때',
+        tip2Desc: '맑은 라벤더, 베이비 핑크, 스카이 블루 활용',
+        swatches: [
+          { name: '라벤더', hex: '#C8B6FF' },
+          { name: '베이비 블루', hex: '#A2D2FF' },
+          { name: '로즈 핑크', hex: '#F29CB8' },
+          { name: '민트 소다', hex: '#9BF6FF' },
+          { name: '소프트 그레이', hex: '#CBD5E1' },
+          { name: '라일락 모브', hex: '#B892B8' }
+        ]
+      },
+      autumn: {
+        id: 'autumn',
+        name: '가을 웜톤',
+        short: '차분하고 깊은 색',
+        badgeColor: '#B5653B',
+        toneGroup: '웜톤',
+        colorsDesc: '연한 갈색, 탁한 황갈색, 녹갈색, 밤색 등 차분하고 깊이 있는 색',
+        material: '린넨, 데님, 트위드, 소재감 있는 스웨터',
+        pattern: '페이즐리, 레오파드, 체크, 패치워크',
+        accessory: '매트한 골드, 자연 소재(우드·라탄), 무광 금속',
+        tip1Title: '부드럽고 투명하게 하고 싶을 때',
+        tip1Desc: '오트밀 베이지나 따뜻한 밀크티 컬러 톤온톤 코디',
+        tip2Title: '도시적이고 존재감 있게 하고 싶을 때',
+        tip2Desc: '딥 테라코타, 브릭 레드, 다크 올리브 활용',
+        swatches: [
+          { name: '테라코타', hex: '#D95526' },
+          { name: '머스타드', hex: '#DDA15E' },
+          { name: '모스 그린', hex: '#4E7D28' },
+          { name: '에스프레소', hex: '#5C4033' },
+          { name: '올리브 카키', hex: '#6B705C' },
+          { name: '오트밀 베이지', hex: '#E6CCB2' }
+        ]
+      },
+      winter: {
+        id: 'winter',
+        name: '겨울 쿨톤',
+        short: '선명하고 도시적인 색',
+        badgeColor: '#3B429F',
+        toneGroup: '쿨톤',
+        colorsDesc: '푸른색이 들어간 색, 순백·블랙처럼 강렬하게 대비되는 선명한 색',
+        material: '광택 있는 벨벳, 캐시미어, 가죽',
+        pattern: '무지, 기하학 무늬, 대담한 스트라이프',
+        accessory: '실버, 플라티늄, 차갑게 빛나는 크리스탈',
+        tip1Title: '밝고 생기 있게 하고 싶을 때',
+        tip1Desc: '아이스 핑크, 아이시 블루와 순백색(퓨어 화이트) 대비',
+        tip2Title: '고급스럽고 깊이 있게 하고 싶을 때',
+        tip2Desc: '딥 버건디, 로얄 네이비, 블랙 모노톤 매치',
+        swatches: [
+          { name: '로얄 블루', hex: '#2B59C3' },
+          { name: '체리 버건디', hex: '#9E1B42' },
+          { name: '퓨어 화이트', hex: '#FFFFFF' },
+          { name: '제트 블랙', hex: '#1E1E24' },
+          { name: '아이스 민트', hex: '#D8F3DC' },
+          { name: '비비드 마젠타', hex: '#D81159' }
+        ]
+      }
+    };
+
+    const EVIDENCE_PHRASES = [
+      '얼굴이 환해 보여요',
+      '혈색이 좋아 보여요',
+      '윤곽이 또렷해 보여요',
+      '색보다 얼굴이 먼저 보여요',
+      '이목구비가 선명해 보여요',
+      '입술색이 살아 보여요'
+    ];
+
+    // ==================== 상태 관리 ====================
+    const state = {
+      quiz: { q1: null, q2: null, q3: null, q4: null },
+      activeFiveColor: 'pink',
+      activeDrapeSide: 'warm',
+      fiveVotes: {}, // { pink: 'warm'|'cool'|'same' }
+      selectedSeason: 'spring',
+      top3Colors: [],
+      stylebookSeason: 'spring',
+      timerInterval: null,
+      camStream: null,
+      hasCustomPhoto: false,
+      lastResult: null,
+      records: []
+    };
+
+    try {
+      const saved = localStorage.getItem('personal_color_lab_records_v1');
+      if (saved) state.records = JSON.parse(saved);
+    } catch (e) {}
+
+    // ==================== 유틸리티 ====================
+    function showToast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.classList.remove('show'), 2600);
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
+      document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+      document.querySelectorAll('.tab-pill').forEach(b => {
+        b.classList.toggle('active', b.dataset.tab === tabName);
+      });
+    }
+
+    // ==================== 탭 1: 착시 & 퀴즈 ====================
+    function initTab1() {
+      let hiddenBg = false;
+      document.getElementById('toggleIllusionBtn').addEventListener('click', () => {
+        hiddenBg = !hiddenBg;
+        const l = document.getElementById('illusionBoxL');
+        const r = document.getElementById('illusionBoxR');
+        const ans = document.getElementById('illusionAnswer');
+        l.style.backgroundColor = hiddenBg ? '#FAF0D7' : '#2B59C3';
+        r.style.backgroundColor = hiddenBg ? '#FAF0D7' : '#F4C430';
+        ans.classList.toggle('hidden', !hiddenBg);
+        document.getElementById('toggleIllusionBtn').textContent = hiddenBg ? '원래 배경 보기' : '정답 확인 (배경 가리기)';
+      });
+
+      document.querySelectorAll('[data-demo-tone]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const isCool = btn.dataset.demoTone === 'cool';
+          document.getElementById('demoShirt').setAttribute('fill', isCool ? '#4A7BB7' : '#F4C430');
+          document.getElementById('demoCaption').textContent = isCool
+            ? '현재 선택: 시원한 파랑(쿨) 시트'
+            : '현재 선택: 따뜻한 노랑(웜) 시트';
+        });
+      });
+
+      renderQuiz();
+      document.getElementById('resetQuizBtn').addEventListener('click', () => {
+        state.quiz = { q1: null, q2: null, q3: null, q4: null };
+        renderQuiz();
+        updateQuizResult();
+      });
+
+      document.getElementById('goLabFromQuizBtn').addEventListener('click', () => switchTab('lab'));
+    }
+
+    function renderQuiz() {
+      const container = document.getElementById('quizContainer');
+      container.innerHTML = QUIZ_QUESTIONS.map(q => `
+        <div class="p-3.5 rounded-2xl bg-[#FAF0D7] border-2 border-[#332824] space-y-2">
+          <div class="font-extrabold text-sm">${q.title}</div>
+          <div class="space-y-1.5">
+            ${q.options.map(opt => {
+              const active = state.quiz[q.id] === opt.code;
+              return `
+                <button type="button" data-q="${q.id}" data-code="${opt.code}"
+                  class="w-full text-left px-2.5 py-2 rounded-xl border text-xs font-bold transition ${
+                    active
+                      ? 'bg-[#D95526] text-white border-[#332824]'
+                      : 'bg-[#FFFDF7] text-[#332824] border-[#332824]/40 hover:border-[#332824]'
+                  }">
+                  <span class="inline-block w-4">${opt.code}.</span> ${opt.label}
+                </button>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      `).join('');
+
+      container.querySelectorAll('button[data-q]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.quiz[btn.dataset.q] = btn.dataset.code;
+          renderQuiz();
+          updateQuizResult();
+        });
+      });
+    }
+
+    function updateQuizResult() {
+      const vals = Object.values(state.quiz).filter(Boolean);
+      const box = document.getElementById('quizResultText');
+      if (vals.length < 4) {
+        box.textContent = `4개 문항 중 ${vals.length}개 선택됨 — 모두 선택하면 예측 결과가 나옵니다.`;
+        return;
+      }
+      const counts = { A: 0, B: 0, C: 0, D: 0 };
+      vals.forEach(v => counts[v]++);
+      const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
+      const map = {
+        A: '봄 웜톤 (A 우세)',
+        B: '여름 쿨톤 (B 우세)',
+        C: '가을 웜톤 (C 우세)',
+        D: '겨울 쿨톤 (D 우세)'
+      };
+      box.textContent = `예측 결과: "${map[top]}" 예상! 이제 사진 진단실에서 키트 시트로 직접 근거를 확인해 봐요.`;
+    }
+
+    // ==================== 탭 2: 사진 진단실 ====================
+    function drawDefaultAvatar() {
+      const canvas = document.getElementById('photoCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = 480;
+      canvas.height = 516;
+      ctx.fillStyle = '#FAF0D7';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // 따뜻한 일러스트 가이드 얼굴
+      ctx.fillStyle = '#F2C9B2';
+      ctx.strokeStyle = '#332824';
+      ctx.lineWidth = 4;
+      // 목
+      ctx.beginPath();
+      ctx.roundRect(205, 290, 70, 90, 16);
+      ctx.fill();
+      ctx.stroke();
+
+      // 얼굴
+      ctx.beginPath();
+      ctx.ellipse(240, 210, 92, 112, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // 머리카락
+      ctx.fillStyle = '#3B2F2B';
+      ctx.beginPath();
+      ctx.arc(240, 175, 96, Math.PI, Math.PI * 2);
+      ctx.fill();
+
+      // 눈/입
+      ctx.fillStyle = '#332824';
+      ctx.beginPath();
+      ctx.arc(204, 208, 7, 0, Math.PI * 2);
+      ctx.arc(276, 208, 7, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#B85C4E';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(240, 248, 22, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
+
+      ctx.fillStyle = '#332824';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('카메라를 켜거나 내 사진을 올려주세요!', 240, 56);
+    }
+
+    function initTab2() {
+      drawDefaultAvatar();
+
+      document.getElementById('capeToggle').addEventListener('change', (e) => {
+        document.getElementById('capeLayer').style.display = e.target.checked ? 'block' : 'none';
+      });
+
+      // 카메라 켜기
+      document.getElementById('startCamBtn').addEventListener('click', async () => {
+        const video = document.getElementById('cameraVideo');
+        const canvas = document.getElementById('photoCanvas');
+        try {
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            showToast('이 브라우저에서는 카메라를 지원하지 않아 사진 올리기를 이용해 주세요.');
+            return;
+          }
+          state.camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+          video.srcObject = state.camStream;
+          video.classList.remove('hidden');
+          canvas.classList.add('hidden');
+          document.getElementById('snapCamBtn').disabled = false;
+          showToast('카메라가 켜졌어요! 얼굴을 중앙에 맞추고 사진 찍기를 눌러 주세요.');
+        } catch (err) {
+          showToast('실시간 웹캠이 차단되어 기기 카메라/사진 선택으로 연결합니다!');
+          setTimeout(() => {
+            document.getElementById('capturePhotoInput').click();
+          }, 400);
+        }
+      });
+
+      // 사진 찍기
+      document.getElementById('snapCamBtn').addEventListener('click', () => {
+        const video = document.getElementById('cameraVideo');
+        const canvas = document.getElementById('photoCanvas');
+        if (!state.camStream) return;
+        canvas.width = video.videoWidth || 480;
+        canvas.height = video.videoHeight || 516;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        state.camStream.getTracks().forEach(t => t.stop());
+        state.camStream = null;
+        video.classList.add('hidden');
+        canvas.classList.remove('hidden');
+        document.getElementById('snapCamBtn').disabled = true;
+        state.hasCustomPhoto = true;
+        showToast('사진 촬영 완료! 이제 아래 5색 시트를 대보고 색감 분석을 해보세요.');
+      });
+
+      // 사진 업로드 및 기기 카메라 촬영 파일 공통 처리
+      function handlePhotoFile(e) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.getElementById('photoCanvas');
+            canvas.width = 480;
+            canvas.height = 516;
+            const ctx = canvas.getContext('2d');
+            const scale = Math.max(canvas.width / img.width, canvas.height / img.height);
+            const x = (canvas.width - img.width * scale) / 2;
+            const y = (canvas.height - img.height * scale) / 2;
+            ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
+            document.getElementById('cameraVideo').classList.add('hidden');
+            canvas.classList.remove('hidden');
+            state.hasCustomPhoto = true;
+            showToast('사진이 올라갔어요! 5색 시트 비교와 자동 색감 분석을 해보세요.');
+          };
+          img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+      document.getElementById('capturePhotoBtn').addEventListener('click', () => {
+        document.getElementById('capturePhotoInput').click();
+      });
+      document.getElementById('uploadPhotoBtn').addEventListener('click', () => {
+        document.getElementById('uploadPhotoInput').click();
+      });
+      document.getElementById('uploadPhotoInput').addEventListener('change', handlePhotoFile);
+      document.getElementById('capturePhotoInput').addEventListener('change', handlePhotoFile);
+
+      // 사진 색감 자동 분석
+      document.getElementById('analyzeToneBtn').addEventListener('click', analyzePhotoTone);
+
+      // 3초 타이머
+      document.getElementById('timerBtn').addEventListener('click', () => {
+        clearInterval(state.timerInterval);
+        let sec = 3;
+        const txt = document.getElementById('timerText');
+        txt.textContent = `${sec}초 관찰 중...`;
+        state.timerInterval = setInterval(() => {
+          sec--;
+          if (sec <= 0) {
+            clearInterval(state.timerInterval);
+            // 반대 시트로 자동 토글해 비교 돕기
+            state.activeDrapeSide = state.activeDrapeSide === 'warm' ? 'cool' : 'warm';
+            renderFiveColorDetail();
+            txt.textContent = '시트 전환 완료! (다시 3초)';
+          } else {
+            txt.textContent = `${sec}초 관찰 중...`;
+          }
+        }, 1000);
+      });
+
+      renderFiveColorTabs();
+      renderFiveColorDetail();
+      renderSeasonSelector();
+      renderEvidenceChips();
+      renderTop3Palette();
+
+      document.getElementById('completeDiagBtn').addEventListener('click', completeDiagnosis);
+    }
+
+    function analyzePhotoTone() {
+      const canvas = document.getElementById('photoCanvas');
+      const ctx = canvas.getContext('2d');
+      // 중앙 얼굴 영역 픽셀 샘플링
+      const w = canvas.width;
+      const h = canvas.height;
+      const sx = Math.floor(w * 0.35);
+      const sy = Math.floor(h * 0.25);
+      const sw = Math.floor(w * 0.3);
+      const sh = Math.floor(h * 0.25);
+      const data = ctx.getImageData(sx, sy, sw, sh).data;
+      let rSum = 0, gSum = 0, bSum = 0, count = 0;
+      for (let i = 0; i < data.length; i += 16) {
+        rSum += data[i];
+        gSum += data[i + 1];
+        bSum += data[i + 2];
+        count++;
+      }
+      const r = rSum / count;
+      const g = gSum / count;
+      const b = bSum / count;
+      const warmth = (r * 0.5 + g * 0.5) - b; // 노란 기 vs 푸른 기
+      const brightness = (r + g + b) / 3;
+
+      let suggested = 'spring';
+      if (warmth >= 28) {
+        suggested = brightness >= 175 ? 'spring' : 'autumn';
+      } else {
+        suggested = brightness >= 175 ? 'summer' : 'winter';
+      }
+
+      state.selectedSeason = suggested;
+      renderSeasonSelector();
+      renderTop3Palette();
+
+      const box = document.getElementById('autoToneBox');
+      box.classList.remove('hidden');
+      box.innerHTML = `
+        <strong>참고용 색감 분석 결과:</strong> 중앙 피부 평균 RGB(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}) 기준
+        <strong>${SEASONS[suggested].name}</strong> 경향이 보여요. (조명에 따라 달라질 수 있으니 5색 시트로 직접 확인해 주세요!)
+      `;
+      showToast(`사진 색감 분석: ${SEASONS[suggested].name} 추천!`);
+    }
+
+    function renderFiveColorTabs() {
+      const wrap = document.getElementById('fiveColorTabs');
+      wrap.innerHTML = FIVE_COLORS.map(c => {
+        const active = state.activeFiveColor === c.id;
+        const vote = state.fiveVotes[c.id];
+        const mark = vote === 'warm' ? ' · 웜○' : vote === 'cool' ? ' · 쿨○' : vote === 'same' ? ' · 비슷' : '';
+        return `
+          <button type="button" data-five="${c.id}"
+            class="sketch-btn px-3 py-1.5 text-xs font-extrabold ${
+              active ? 'bg-[#332824] text-white' : 'bg-[#FFFDF7] text-[#332824]'
+            }">
+            ${c.name}${mark}
+          </button>
+        `;
+      }).join('');
+
+      wrap.querySelectorAll('button[data-five]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.activeFiveColor = btn.dataset.five;
+          renderFiveColorTabs();
+          renderFiveColorDetail();
+        });
+      });
+    }
+
+    function renderFiveColorDetail() {
+      const c = FIVE_COLORS.find(x => x.id === state.activeFiveColor);
+      const isWarm = state.activeDrapeSide === 'warm';
+      const activeHex = isWarm ? c.warmHex : c.coolHex;
+      const activeName = isWarm ? c.warmName : c.coolName;
+
+      // 스테이지 턱 밑 시트 업데이트
+      document.getElementById('drapeCollar').style.backgroundColor = activeHex;
+      document.getElementById('drapeLabel').textContent = `${c.name} · ${activeName}`;
+
+      const box = document.getElementById('colorDetailBox');
+      const currentVote = state.fiveVotes[c.id];
+      box.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <span class="text-xs font-extrabold text-[#D95526]">관찰 포인트</span>
+            <div class="font-extrabold text-sm">${c.name} 시트: ${c.point}</div>
+          </div>
+          <div class="flex gap-2">
+            <button type="button" id="pickWarmDrape" class="sketch-btn px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 ${isWarm ? 'bg-[#F4C8B0]' : 'bg-[#FFFDF7]'}">
+              <span class="w-3 h-3 rounded-full border border-[#332824]" style="background:${c.warmHex}"></span> 웜 시트 대보기
+            </button>
+            <button type="button" id="pickCoolDrape" class="sketch-btn px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 ${!isWarm ? 'bg-[#E2EEF9]' : 'bg-[#FFFDF7]'}">
+              <span class="w-3 h-3 rounded-full border border-[#332824]" style="background:${c.coolHex}"></span> 쿨 시트 대보기
+            </button>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+          <div class="p-2.5 rounded-xl bg-[#FFFDF7] border border-[#332824]/40">
+            <strong class="text-[#D95526]">웜이 어울리면</strong><br/>${c.warmDesc}
+          </div>
+          <div class="p-2.5 rounded-xl bg-[#FFFDF7] border border-[#332824]/40">
+            <strong class="text-[#2B59C3]">쿨이 어울리면</strong><br/>${c.coolDesc}
+          </div>
+          <div class="p-2.5 rounded-xl bg-[#FFFDF7] border border-[#332824]/40">
+            <strong>덜 어울리면</strong><br/>${c.badDesc}
+          </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 pt-1">
+          <span class="text-xs font-bold">이 색의 결과 기록:</span>
+          <button type="button" data-vote="warm" class="sketch-btn px-3 py-1 text-xs font-bold ${currentVote === 'warm' ? 'bg-[#D95526] text-white' : 'bg-[#FFFDF7]'}">웜이 더 생기 있어요 ○</button>
+          <button type="button" data-vote="cool" class="sketch-btn px-3 py-1 text-xs font-bold ${currentVote === 'cool' ? 'bg-[#2B59C3] text-white' : 'bg-[#FFFDF7]'}">쿨이 더 생기 있어요 ○</button>
+          <button type="button" data-vote="same" class="sketch-btn px-3 py-1 text-xs font-bold ${currentVote === 'same' ? 'bg-[#4E7D28] text-white' : 'bg-[#FFFDF7]'}">비슷해요</button>
+        </div>
+      `;
+
+      document.getElementById('pickWarmDrape').addEventListener('click', () => {
+        state.activeDrapeSide = 'warm';
+        renderFiveColorDetail();
+      });
+      document.getElementById('pickCoolDrape').addEventListener('click', () => {
+        state.activeDrapeSide = 'cool';
+        renderFiveColorDetail();
+      });
+      box.querySelectorAll('button[data-vote]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.fiveVotes[c.id] = btn.dataset.vote;
+          renderFiveColorTabs();
+          renderFiveColorDetail();
+          updateWarmCoolSummary();
+        });
+      });
+    }
+
+    function updateWarmCoolSummary() {
+      const votes = Object.values(state.fiveVotes);
+      const w = votes.filter(v => v === 'warm').length;
+      const c = votes.filter(v => v === 'cool').length;
+      const s = votes.filter(v => v === 'same').length;
+      const el = document.getElementById('warmCoolSummary');
+      if (votes.length === 0) {
+        el.textContent = '5색 관찰 기록: 아직 선택 전';
+        return;
+      }
+      const lean = w > c ? '웜톤 우세' : c > w ? '쿨톤 우세' : '웜·쿨 반반';
+      el.textContent = `5색 관찰: 웜 ${w} · 쿨 ${c} · 비슷 ${s} → ${lean}`;
+    }
+
+    function renderSeasonSelector() {
+      const wrap = document.getElementById('seasonSelectBtns');
+      wrap.innerHTML = Object.values(SEASONS).map(s => {
+        const active = state.selectedSeason === s.id;
+        return `
+          <button type="button" data-season="${s.id}"
+            class="sketch-btn py-2 px-3 text-xs font-extrabold flex items-center justify-center gap-1.5 ${
+              active ? 'bg-[#332824] text-white' : 'bg-[#FFFDF7] text-[#332824]'
+            }">
+            <span class="w-3 h-3 rounded-full border border-white/70" style="background:${s.badgeColor}"></span>
+            ${s.name}
+          </button>
+        `;
+      }).join('');
+
+      wrap.querySelectorAll('button[data-season]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.selectedSeason = btn.dataset.season;
+          state.top3Colors = [];
+          renderSeasonSelector();
+          renderTop3Palette();
+          // 스테이지 배경 힌트로 계절 첫 번째 대표색 적용
+          const firstSwatch = SEASONS[state.selectedSeason].swatches[0];
+          document.getElementById('drapeCollar').style.backgroundColor = firstSwatch.hex;
+          document.getElementById('drapeLabel').textContent = `${SEASONS[state.selectedSeason].name} · ${firstSwatch.name}`;
+        });
+      });
+    }
+
+    function renderEvidenceChips() {
+      const wrap = document.getElementById('evidenceChips');
+      wrap.innerHTML = EVIDENCE_PHRASES.map(p => `
+        <button type="button" class="px-2.5 py-1 rounded-full border border-[#332824] bg-[#FFFDF7] hover:bg-[#F4C8B0] text-xs font-bold transition">
+          + ${p}
+        </button>
+      `).join('');
+      wrap.querySelectorAll('button').forEach((btn, idx) => {
+        btn.addEventListener('click', () => {
+          const ta = document.getElementById('evidenceInput');
+          const phrase = EVIDENCE_PHRASES[idx];
+          ta.value = ta.value.trim() ? `${ta.value.trim()}, ${phrase}` : phrase;
+        });
+      });
+    }
+
+    function renderTop3Palette() {
+      const s = SEASONS[state.selectedSeason];
+      const wrap = document.getElementById('top3Palette');
+      wrap.innerHTML = s.swatches.map(sw => {
+        const isSel = state.top3Colors.some(x => x.name === sw.name);
+        return `
+          <div class="flex flex-col items-center gap-1">
+            <button type="button" data-swatch="${sw.name}" class="swatch-dot ${isSel ? 'selected' : ''}" style="background:${sw.hex}" title="${sw.name}"></button>
+            <span class="text-[11px] font-bold">${sw.name}</span>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('top3Count').textContent = state.top3Colors.length;
+      document.getElementById('top3Names').textContent = state.top3Colors.map(x => x.name).join(' · ');
+
+      wrap.querySelectorAll('button[data-swatch]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const sw = s.swatches.find(x => x.name === btn.dataset.swatch);
+          // 클릭 시 사진 아래 드레이프도 즉시 변경!
+          document.getElementById('drapeCollar').style.backgroundColor = sw.hex;
+          document.getElementById('drapeLabel').textContent = `${s.name} · ${sw.name}`;
+
+          const idx = state.top3Colors.findIndex(x => x.name === sw.name);
+          if (idx >= 0) {
+            state.top3Colors.splice(idx, 1);
+          } else {
+            if (state.top3Colors.length >= 3) state.top3Colors.shift();
+            state.top3Colors.push(sw);
+          }
+          renderTop3Palette();
+        });
+      });
+    }
+
+    function completeDiagnosis() {
+      const cls = document.getElementById('studentClass').value;
+      const sid = document.getElementById('studentId').value.trim();
+      const sname = document.getElementById('studentName').value.trim();
+      if (!sid || !sname) {
+        showToast('학번과 이름을 먼저 입력해 주세요!');
+        return;
+      }
+
+      const season = SEASONS[state.selectedSeason];
+      const evidence = document.getElementById('evidenceInput').value.trim() || '5색 시트 관찰 결과 얼굴이 가장 환하고 또렷해 보였어요.';
+      const top3 = state.top3Colors.length > 0 ? state.top3Colors : season.swatches.slice(0, 3);
+
+      const record = {
+        id: Date.now(),
+        cls,
+        sid,
+        sname,
+        seasonId: season.id,
+        seasonName: season.name,
+        evidence,
+        top3,
+        style: {
+          colorsDesc: season.colorsDesc,
+          material: season.material,
+          pattern: season.pattern,
+          accessory: season.accessory
+        },
+        createdAt: new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+      };
+
+      state.lastResult = record;
+      state.records.unshift(record);
+      try {
+        localStorage.setItem('personal_color_lab_records_v1', JSON.stringify(state.records.slice(0, 40)));
+      } catch (e) {}
+
+      updateShareBanner(record);
+      renderLocalGallery();
+      switchTab('padlet');
+      showToast(`${sid} ${sname} 학생의 ${season.name} 추천 카드가 완성되었어요!`);
+    }
+
+    // ==================== 탭 3: 4계절 스타일북 ====================
+    function initTab3() {
+      renderStylebookTabs();
+      renderStylebookContent();
+    }
+
+    function renderStylebookTabs() {
+      const wrap = document.getElementById('stylebookTabs');
+      wrap.innerHTML = Object.values(SEASONS).map(s => {
+        const active = state.stylebookSeason === s.id;
+        return `
+          <button type="button" data-sb="${s.id}" class="sketch-btn px-3.5 py-1.5 text-xs font-extrabold ${
+            active ? 'bg-[#D95526] text-white' : 'bg-[#FFFDF7] text-[#332824]'
+          }">${s.name}</button>
+        `;
+      }).join('');
+      wrap.querySelectorAll('button[data-sb]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.stylebookSeason = btn.dataset.sb;
+          renderStylebookTabs();
+          renderStylebookContent();
+        });
+      });
+    }
+
+    function renderStylebookContent() {
+      const s = SEASONS[state.stylebookSeason];
+      const wrap = document.getElementById('stylebookContent');
+      wrap.innerHTML = `
+        <div class="p-4 rounded-2xl bg-[#FAF0D7] border-2 border-[#332824] space-y-3">
+          <div class="inline-block px-3 py-1 rounded-full text-xs font-extrabold text-white border border-[#332824]" style="background:${s.badgeColor}">
+            ${s.name} · ${s.short}
+          </div>
+          <p class="text-sm font-bold leading-relaxed">${s.colorsDesc}</p>
+          <div class="grid grid-cols-3 gap-2 pt-1">
+            ${s.swatches.map(sw => `
+              <div class="p-2 rounded-xl bg-[#FFFDF7] border border-[#332824] text-center">
+                <div class="w-full h-7 rounded-lg border border-[#332824]/40 mb-1" style="background:${sw.hex}"></div>
+                <div class="text-[11px] font-bold">${sw.name}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-[#FFFDF7] border-2 border-[#332824] space-y-3 text-sm">
+          <h4 class="font-extrabold text-base">스타일링 추천 (재질 · 무늬 · 액세서리)</h4>
+          <div class="p-3 rounded-xl bg-[#FCE8DC] border border-[#332824]">
+            <strong class="text-[#D95526]">재질:</strong> ${s.material}
+          </div>
+          <div class="p-3 rounded-xl bg-[#E4EED8] border border-[#332824]">
+            <strong class="text-[#4E7D28]">무늬:</strong> ${s.pattern}
+          </div>
+          <div class="p-3 rounded-xl bg-[#E2EEF9] border border-[#332824]">
+            <strong class="text-[#2B59C3]">액세서리:</strong> ${s.accessory}
+          </div>
+        </div>
+
+        <div class="p-4 rounded-2xl bg-[#FFFDF7] border-2 border-[#332824] space-y-3 text-sm">
+          <h4 class="font-extrabold text-base">다른 분위기를 내고 싶다면?</h4>
+          <div class="p-3 rounded-xl bg-[#FAF0D7] border border-[#332824]">
+            <div class="font-extrabold mb-1">${s.tip1Title}</div>
+            <p class="text-xs leading-relaxed">${s.tip1Desc}</p>
+          </div>
+          <div class="p-3 rounded-xl bg-[#FAF0D7] border border-[#332824]">
+            <div class="font-extrabold mb-1">${s.tip2Title}</div>
+            <p class="text-xs leading-relaxed">${s.tip2Desc}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    // ==================== 탭 4: 패들렛 공유 & 결과 카드 PNG 생성 ====================
+    function initTab4() {
+      document.getElementById('copyPostBtn').addEventListener('click', copyShareText);
+      document.getElementById('downloadCardBtn').addEventListener('click', downloadResultCardPng);
+      document.getElementById('galleryFilter').addEventListener('change', renderLocalGallery);
+      renderLocalGallery();
+    }
+
+    function formatPadletText(r) {
+      const top3Text = r.top3.map(c => c.name).join(', ');
+      return {
+        title: `[${r.cls}] ${r.sid} ${r.sname} - ${r.seasonName}`,
+        body: `🎨 나의 퍼스널 컬러: ${r.seasonName}\n✨ 관찰 근거: ${r.evidence}\n🏆 베스트 컬러 TOP 3: ${top3Text}\n👗 추천 스타일\n- 어울리는 색: ${r.style.colorsDesc}\n- 재질: ${r.style.material}\n- 무늬: ${r.style.pattern}\n- 액세서리: ${r.style.accessory}`
+      };
+    }
+
+    function updateShareBanner(r) {
+      const formatted = formatPadletText(r);
+      document.getElementById('shareTitlePreview').textContent = formatted.title;
+      document.getElementById('shareBodyPreview').textContent = formatted.body;
+    }
+
+    function copyShareText() {
+      if (!state.lastResult) {
+        showToast('먼저 ② 사진 진단실에서 진단을 완료해 주세요!');
+        return;
+      }
+      const { title, body } = formatPadletText(state.lastResult);
+      const full = `${title}\n\n${body}`;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(full).then(() => {
+          showToast('복사 완료! 아래 패들렛의 내 반(+)에 바로 붙여넣기 하세요.');
+        }).catch(() => fallbackCopy(full));
+      } else {
+        fallbackCopy(full);
+      }
+    }
+
+    function fallbackCopy(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showToast('복사 완료! 패들렛에 붙여넣기 하세요.');
+      } catch (e) {
+        showToast('복사에 실패했어요. 위 박스를 드래그해서 복사해 주세요.');
+      }
+      document.body.removeChild(ta);
+    }
+
+    function downloadResultCardPng() {
+      if (!state.lastResult) {
+        showToast('먼저 ② 사진 진단실에서 진단을 완료해 주세요!');
+        return;
+      }
+      const r = state.lastResult;
+      const season = SEASONS[r.seasonId];
+      const out = document.createElement('canvas');
+      out.width = 900;
+      out.height = 560;
+      const ctx = out.getContext('2d');
+
+      // 크림 버터 배경 + 피치 카드
+      ctx.fillStyle = '#FAF0D7';
+      ctx.fillRect(0, 0, 900, 560);
+
+      ctx.fillStyle = '#FFFDF7';
+      ctx.strokeStyle = '#332824';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.roundRect(28, 28, 844, 504, 28);
+      ctx.fill();
+      ctx.stroke();
+
+      // 왼쪽: 촬영한 학생 사진 + 계절 대표 시트
+      const photoCanvas = document.getElementById('photoCanvas');
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(54, 58, 300, 340, 20);
+      ctx.clip();
+      ctx.drawImage(photoCanvas, 54, 58, 300, 340);
+      ctx.fillStyle = r.top3[0]?.hex || season.badgeColor;
+      ctx.fillRect(54, 320, 300, 78);
+      ctx.restore();
+
+      ctx.strokeStyle = '#332824';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.roundRect(54, 58, 300, 340, 20);
+      ctx.stroke();
+
+      // 오른쪽 텍스트
+      ctx.fillStyle = season.badgeColor;
+      ctx.beginPath();
+      ctx.roundRect(386, 62, 160, 36, 18);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = 'bold 17px sans-serif';
+      ctx.fillText(r.seasonName, 420, 86);
+
+      ctx.fillStyle = '#332824';
+      ctx.font = 'bold 28px sans-serif';
+      ctx.fillText(`[${r.cls}] ${r.sid} ${r.sname}`, 386, 138);
+
+      ctx.font = 'bold 16px sans-serif';
+      ctx.fillStyle = '#D95526';
+      ctx.fillText('관찰 근거', 386, 182);
+      ctx.fillStyle = '#332824';
+      ctx.font = '16px sans-serif';
+      wrapText(ctx, r.evidence, 386, 208, 450, 24);
+
+      ctx.font = 'bold 16px sans-serif';
+      ctx.fillStyle = '#4E7D28';
+      ctx.fillText('추천 스타일링', 386, 282);
+      ctx.fillStyle = '#332824';
+      ctx.font = '15px sans-serif';
+      wrapText(ctx, `• 재질: ${r.style.material}`, 386, 308, 450, 22);
+      wrapText(ctx, `• 무늬: ${r.style.pattern}`, 386, 334, 450, 22);
+      wrapText(ctx, `• 액세서리: ${r.style.accessory}`, 386, 360, 450, 22);
+
+      // 하단 베스트 컬러 TOP 3 칩
+      ctx.fillStyle = '#332824';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.fillText('나의 베스트 컬러 TOP 3', 54, 438);
+      r.top3.forEach((sw, i) => {
+        const bx = 54 + i * 265;
+        ctx.fillStyle = sw.hex;
+        ctx.beginPath();
+        ctx.roundRect(bx, 454, 52, 46, 12);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#332824';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.fillText(`${i + 1}. ${sw.name}`, bx + 64, 483);
+      });
+
+      const link = document.createElement('a');
+      link.download = `${r.sid}_${r.sname}_${r.seasonName}.png`;
+      link.href = out.toDataURL('image/png');
+      link.click();
+      showToast('결과 카드 이미지가 저장되었어요! 패들렛에 첨부해 보세요.');
+    }
+
+    function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
+      const chars = text.split('');
+      let line = '';
+      let curY = y;
+      for (let i = 0; i < chars.length; i++) {
+        const test = line + chars[i];
+        if (ctx.measureText(test).width > maxWidth && i > 0) {
+          ctx.fillText(line, x, curY);
+          line = chars[i];
+          curY += lineHeight;
+        } else {
+          line = test;
+        }
+      }
+      ctx.fillText(line, x, curY);
+    }
+
+    function renderLocalGallery() {
+      const filter = document.getElementById('galleryFilter').value;
+      const list = filter === '전체' ? state.records : state.records.filter(r => r.cls === filter);
+      const grid = document.getElementById('localGalleryGrid');
+      if (list.length === 0) {
+        grid.innerHTML = `<div class="col-span-full text-center py-8 text-sm text-[#332824]/70 font-bold">아직 기록된 학생 카드가 없어요. ② 사진 진단실에서 진단을 완료하면 여기에 바로 쌓입니다!</div>`;
+        return;
+      }
+      grid.innerHTML = list.map(r => {
+        const s = SEASONS[r.seasonId];
+        return `
+          <div class="p-4 rounded-2xl bg-[#FAF0D7] border-2 border-[#332824] space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold px-2.5 py-0.5 rounded-full text-white border border-[#332824]" style="background:${s.badgeColor}">${r.seasonName}</span>
+              <span class="text-xs font-bold text-[#332824]/70">${r.cls} · ${r.createdAt}</span>
+            </div>
+            <div class="font-extrabold text-base">${r.sid} ${r.sname}</div>
+            <p class="text-xs leading-relaxed bg-[#FFFDF7] p-2.5 rounded-xl border border-[#332824]/30">${r.evidence}</p>
+            <div class="flex items-center gap-1.5 pt-1">
+              ${r.top3.map(c => `<span class="w-5 h-5 rounded-full border border-[#332824]" style="background:${c.hex}" title="${c.name}"></span>`).join('')}
+              <span class="text-[11px] font-bold ml-1">${r.top3.map(c => c.name).join(' · ')}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // ==================== 초기화 ====================
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.tab-pill').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+      });
+      initTab1();
+      initTab2();
+      initTab3();
+      initTab4();
+      if (window.lucide) window.lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
